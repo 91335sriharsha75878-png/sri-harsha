@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini AI Chat Studio • Fullstack Architecture</title>
+  <meta name="description" content="A modern, high-performance AI Chatbot powered by Google Gemini LLM with a clean separation between Frontend (presentation/SSE) and Backend (Node.js/Express API).">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Vanilla CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+  <div class="ambient-glow glow-3" aria-hidden="true"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-layout" id="app-root">
+    
+    <!-- Top Global Navigation Header -->
+    <header class="app-header" id="app-header">
+      <div class="header-left">
+        <button id="btn-toggle-sidebar" class="icon-button" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="brand-container">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill="url(#sparkle-grad)" />
+              <defs>
+                <linearGradient id="sparkle-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38BDF8"/>
+                  <stop offset="0.5" stop-color="#818CF8"/>
+                  <stop offset="1" stop-color="#C084FC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">Gemini AI Studio</h1>
+            <span class="brand-subtitle">Decoupled Fullstack Chat</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center status pill & Model selection -->
+      <div class="header-center">
+        <!-- Live Backend Status Pill -->
+        <div id="backend-status-badge" class="status-badge status-checking" title="Checking backend health...">
+          <span class="status-dot"></span>
+          <span id="backend-status-text" class="status-label">Connecting to Backend...</span>
+          <span id="backend-latency" class="latency-text">-- ms</span>
+        </div>
+
+        <!-- Model Picker -->
+        <div class="model-picker-wrapper">
+          <label for="model-select" class="visually-hidden">Choose Gemini Model</label>
+          <select id="model-select" class="model-dropdown" title="Select Gemini LLM Model">
+            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Ultra Fast)</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Lightweight)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (2M Context)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="header-right">
+        <!-- Architecture Modal Trigger -->
+        <button id="btn-architecture-modal" class="pill-button" title="View Frontend / Backend Architecture">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>Architecture Flow</span>
+        </button>
+
+        <!-- API Live Inspector Trigger -->
+        <button id="btn-api-inspector" class="pill-button secondary" title="Inspect Live HTTP & SSE Payloads">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Live API Log</span>
+        </button>
+
+        <!-- Settings Modal Trigger -->
+        <button id="btn-settings-modal" class="icon-button" title="Chat & API Settings" aria-label="Settings">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Container with Sidebar and Chat Area -->
+    <div class="app-body">
+      
+      <!-- Collapsible Sidebar -->
+      <aside class="app-sidebar" id="app-sidebar" aria-label="Chat Sessions & Navigation">
+        <!-- New Chat Action -->
+        <div class="sidebar-top">
+          <button id="btn-new-chat" class="new-chat-btn" title="Start a fresh conversation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Chat</span>
+            <kbd class="shortcut-badge">Ctrl+K</kbd>
+          </button>
+        </div>
+
+        <!-- Chat History List -->
+        <div class="sidebar-section">
+          <div class="section-title-row">
+            <span class="section-title">Saved Chats</span>
+            <button id="btn-clear-all-chats" class="text-action-btn" title="Clear all chat history">Clear All</button>
+          </div>
+          <div id="chat-history-list" class="chat-history-list" role="list">
+            <!-- Dynamic session items injected here -->
+          </div>
+        </div>
+
+        <!-- System Persona Presets -->
+        <div class="sidebar-section">
+          <span class="section-title">System Role Presets</span>
+          <div class="preset-chips-grid">
+            <button class="preset-chip active" data-preset="general" title="General Assistant">⚡ General</button>
+            <button class="preset-chip" data-preset="coder" title="Senior Software Engineer">💻 Code Expert</button>
+            <button class="preset-chip" data-preset="architect" title="Fullstack System Architect">🏛️ Architect</button>
+            <button class="preset-chip" data-preset="concise" title="Concise & Direct responses">🎯 Concise</button>
+          </div>
+        </div>
+
+        <!-- Architecture Quick Card -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-header">
+            <span class="tag-badge">Architecture</span>
+            <span class="architecture-flow-dot"></span>
+          </div>
+          <p class="sidebar-card-title">Frontend ⇄ Backend</p>
+          <p class="sidebar-card-desc">UI sends REST/SSE to Express backend. Backend securely signs Gemini LLM requests.</p>
+          <button id="btn-sidebar-view-arch" class="card-link-btn">Inspect Architecture Flow →</button>
+        </div>
+      </aside>
+
+      <!-- Main Chat Experience Area -->
+      <main class="chat-main" id="chat-main">
+        
+        <!-- Welcome Hero Screen (visible when chat is empty) -->
+        <section class="welcome-hero" id="welcome-hero">
+          <div class="hero-icon-bubble">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill="url(#hero-grad)" />
+              <defs>
+                <linearGradient id="hero-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38BDF8"/>
+                  <stop offset="0.5" stop-color="#818CF8"/>
+                  <stop offset="1" stop-color="#EC4899"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          
+          <h2 class="hero-heading">Welcome to Gemini AI Studio</h2>
+          <p class="hero-description">
+            Experience next-generation conversational intelligence powered by <strong>Google Gemini</strong> with a clean, decoupled <strong>Frontend & Backend architecture</strong>.
+          </p>
+
+          <!-- Architecture Highlight Pills -->
+          <div class="hero-pills">
+            <div class="hero-pill">
+              <span class="pill-dot green"></span>
+              <span><strong>Frontend:</strong> Reactive Vanilla JS & Modern CSS</span>
+            </div>
+            <div class="hero-pill">
+              <span class="pill-dot blue"></span>
+              <span><strong>Backend:</strong> Express.js & Safe Secret Storage</span>
+            </div>
+            <div class="hero-pill">
+              <span class="pill-dot purple"></span>
+              <span><strong>Protocol:</strong> Server-Sent Events (SSE) Streaming</span>
+            </div>
+          </div>
+
+          <!-- Suggested Prompt Cards -->
+          <div class="starter-cards-grid" id="starter-cards">
+            <button class="starter-card" data-prompt="Explain the difference between Frontend and Backend in web development with clear real-world examples.">
+              <div class="starter-card-icon">🏛️</div>
+              <div class="starter-card-content">
+                <h3>Frontend vs Backend</h3>
+                <p>Explain the architectural differences and separation of concerns.</p>
+              </div>
+            </button>
+
+            <button class="starter-card" data-prompt="How does Server-Sent Events (SSE) work for streaming real-time LLM tokens compared to WebSockets?">
+              <div class="starter-card-icon">⚡</div>
+              <div class="starter-card-content">
+                <h3>SSE Token Streaming</h3>
+                <p>Explore real-time streaming mechanics for Gemini LLMs.</p>
+              </div>
+            </button>
+
+            <button class="starter-card" data-prompt="Write an Express.js middleware function to rate-limit AI chat requests and explain how it protects LLM APIs.">
+              <div class="starter-card-icon">💻</div>
+              <div class="starter-card-content">
+                <h3>Code Generation</h3>
+                <p>Generate clean, production-ready Express.js code with tests.</p>
+              </div>
+            </button>
+
+            <button class="starter-card" data-prompt="Give me 5 creative ideas for building AI-powered developer productivity tools.">
+              <div class="starter-card-icon">💡</div>
+              <div class="starter-card-content">
+                <h3>Brainstorming</h3>
+                <p>Generate high-impact project ideas and feature roadmaps.</p>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Messages Stream Container -->
+        <div class="messages-container" id="messages-container" aria-live="polite">
+          <!-- Chat messages dynamically rendered here -->
+        </div>
+
+        <!-- Chat Input Area Footer -->
+        <footer class="chat-input-area" id="chat-input-area">
+          <form class="input-form-box" id="chat-form" onsubmit="return false;">
+            
+            <div class="input-tools-row">
+              <span class="streaming-mode-pill" id="streaming-indicator-tag" title="Real-time Server-Sent Events streaming enabled">
+                <span class="pulsing-radar"></span>
+                <span>SSE Streaming Active</span>
+              </span>
+              <span id="char-counter" class="char-counter">0 chars</span>
+            </div>
+
+            <div class="input-inner-wrapper">
+              <label for="chat-input" class="visually-hidden">Chat message</label>
+              <textarea
+                id="chat-input"
+                class="chat-textarea"
+                rows="1"
+                placeholder="Ask Gemini anything... (Shift + Enter for new line, Enter to send)"
+                aria-label="Ask Gemini anything"
+              ></textarea>
+
+              <div class="input-buttons-group">
+                <!-- Stop Generation Button (shown while streaming) -->
+                <button type="button" id="btn-stop-stream" class="stop-stream-btn hidden" title="Stop response generation">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                  <span>Stop</span>
+                </button>
+
+                <!-- Send Message Button -->
+                <button type="submit" id="btn-send-message" class="send-message-btn" title="Send message (Enter)" aria-label="Send message">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="input-footer-hint">
+              <span>Google Gemini LLM • Connected to Node.js Backend • Clear separation of concerns</span>
+            </div>
+          </form>
+        </footer>
+      </main>
+    </div>
+
+    <!-- MODAL 1: Architecture Visualizer & Separation of Concerns -->
+    <div class="modal-backdrop hidden" id="modal-architecture" role="dialog" aria-modal="true" aria-labelledby="modal-arch-title">
+      <div class="modal-window architecture-modal-window">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon-badge">🏛️</div>
+            <div>
+              <h2 id="modal-arch-title" class="modal-title">Fullstack Architecture & Separation of Concerns</h2>
+              <p class="modal-subtitle">How the Frontend and Backend communicate to power the Gemini LLM</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btn-close-arch-modal" aria-label="Close Architecture Modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Architecture Flow Diagram -->
+          <div class="arch-diagram-container">
+            <!-- Node 1: Frontend Client -->
+            <div class="arch-node client-node">
+              <div class="arch-node-header">
+                <span class="arch-node-badge client-badge">Frontend (Client)</span>
+                <span class="arch-port-tag">Browser UI</span>
+              </div>
+              <ul class="arch-node-list">
+                <li>✨ Vanilla HTML5 & CSS3 Design System</li>
+                <li>⚡ EventSource / SSE Token Consumer</li>
+                <li>📝 Local Chat State & Markdown Rendering</li>
+                <li>🔒 Zero API Secret Exposure</li>
+              </ul>
+              <div class="arch-file-tag">📁 /frontend (index.html, style.css, app.js)</div>
+            </div>
+
+            <!-- Flow Arrow 1 -->
+            <div class="arch-flow-connector">
+              <div class="connector-line"></div>
+              <div class="connector-badge">
+                <span>POST /api/chat/stream</span>
+                <span class="flow-arrow">⇄</span>
+                <span>Server-Sent Events</span>
+              </div>
+            </div>
+
+            <!-- Node 2: Backend Server -->
+            <div class="arch-node server-node">
+              <div class="arch-node-header">
+                <span class="arch-node-badge server-badge">Backend (Server)</span>
+                <span class="arch-port-tag">Port 5000</span>
+              </div>
+              <ul class="arch-node-list">
+                <li>🛡️ Secure .env API Key Management</li>
+                <li>🚦 Express.js REST & SSE Streaming Router</li>
+                <li>📦 Payload Validation & Error Translation</li>
+                <li>🔌 Decoupled & Independently Scalable</li>
+              </ul>
+              <div class="arch-file-tag">📁 /backend (server.js, geminiService.js)</div>
+            </div>
+
+            <!-- Flow Arrow 2 -->
+            <div class="arch-flow-connector">
+              <div class="connector-line"></div>
+              <div class="connector-badge">
+                <span>Google GenAI SDK</span>
+                <span class="flow-arrow">⇄</span>
+                <span>HTTPS / TLS 1.3</span>
+              </div>
+            </div>
+
+            <!-- Node 3: Google Gemini Cloud -->
+            <div class="arch-node cloud-node">
+              <div class="arch-node-header">
+                <span class="arch-node-badge cloud-badge">Gemini Cloud</span>
+                <span class="arch-port-tag">Google Cloud</span>
+              </div>
+              <ul class="arch-node-list">
+                <li>🧠 Gemini 2.5 Flash / Pro LLM</li>
+                <li>⚡ Multimodal Neural Processing</li>
+                <li>⚡ Chunked Token Streaming Output</li>
+              </ul>
+              <div class="arch-file-tag">🌐 Google AI Studio API</div>
+            </div>
+          </div>
+
+          <!-- Comparative Matrix -->
+          <div class="comparison-table-wrapper">
+            <h3 class="subsection-title">Comparison: Frontend vs Backend Responsibilities</h3>
+            <table class="arch-comparison-table">
+              <thead>
+                <tr>
+                  <th>Responsibility Dimension</th>
+                  <th>Frontend Layer (Browser)</th>
+                  <th>Backend Layer (Node.js Express)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>API Key & Secrets</strong></td>
+                  <td>❌ Never stored or exposed in client bundles</td>
+                  <td>✅ Secured in server environment (<code>.env</code>)</td>
+                </tr>
+                <tr>
+                  <td><strong>User Experience</strong></td>
+                  <td>✅ Real-time typing, Markdown, copy buttons, modals</td>
+                  <td>❌ Headless, no presentation logic</td>
+                </tr>
+                <tr>
+                  <td><strong>LLM Communication</strong></td>
+                  <td>Calls internal <code>/api/chat</code> endpoint</td>
+                  <td>Calls Google Gemini API using <code>@google/genai</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Data Streaming</strong></td>
+                  <td>Listens to SSE stream & renders tokens dynamically</td>
+                  <td>Streams chunks to client as Gemini generates them</td>
+                </tr>
+                <tr>
+                  <td><strong>Error Handling</strong></td>
+                  <td>Displays friendly toast & retry actions</td>
+                  <td>Normalizes API quotas, invalid keys, and rate limits</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Live API & SSE Network Inspector -->
+    <div class="modal-backdrop hidden" id="modal-api-inspector" role="dialog" aria-modal="true" aria-labelledby="modal-inspector-title">
+      <div class="modal-window inspector-modal-window">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon-badge">⚡</div>
+            <div>
+              <h2 id="modal-inspector-title" class="modal-title">Live API Request & Stream Inspector</h2>
+              <p class="modal-subtitle">Inspect the exact HTTP payload sent from the Frontend to the Backend</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btn-close-inspector-modal" aria-label="Close Inspector Modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="inspector-grid">
+            <div class="inspector-col">
+              <div class="inspector-col-header">
+                <span>Frontend Request Payload</span>
+                <span class="badge-post">POST /api/chat/stream</span>
+              </div>
+              <pre class="code-preview-box" id="inspector-request-body"><code>// Send a chat message to inspect payload...</code></pre>
+            </div>
+
+            <div class="inspector-col">
+              <div class="inspector-col-header">
+                <span>Backend Response Stream (SSE)</span>
+                <span class="badge-sse" id="inspector-stream-status">Idle</span>
+              </div>
+              <pre class="code-preview-box" id="inspector-response-body"><code>// Stream chunks will appear here in real-time...</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: Settings & API Configuration -->
+    <div class="modal-backdrop hidden" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+      <div class="modal-window settings-modal-window">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon-badge">⚙️</div>
+            <div>
+              <h2 id="modal-settings-title" class="modal-title">Chat & API Configuration</h2>
+              <p class="modal-subtitle">Configure backend endpoints, Gemini API keys, and model parameters</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btn-close-settings-modal" aria-label="Close Settings Modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <form id="settings-form" class="settings-form">
+            <!-- Backend URL -->
+            <div class="form-group">
+              <label for="setting-backend-url" class="form-label">Backend Server URL</label>
+              <div class="input-with-button">
+                <input type="text" id="setting-backend-url" class="form-input" placeholder="http://localhost:5000">
+                <button type="button" id="btn-test-backend" class="form-action-btn">Test Ping</button>
+              </div>
+              <span class="form-help">Leave empty to use the current host origin automatically.</span>
+            </div>
+
+            <!-- Gemini API Key -->
+            <div class="form-group">
+              <label for="setting-api-key" class="form-label">
+                <span>Gemini API Key (Optional Override)</span>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="link-external">Get Free Key ↗</a>
+              </label>
+              <div class="input-with-button">
+                <input type="password" id="setting-api-key" class="form-input" placeholder="AIzaSy... (Leave blank to use backend .env)">
+                <button type="button" id="btn-toggle-key-visibility" class="form-action-btn" title="Toggle visibility">👁️</button>
+                <button type="button" id="btn-verify-key" class="form-action-btn primary">Verify Key</button>
+              </div>
+              <div id="key-verification-status" class="verification-status-box hidden"></div>
+              <span class="form-help">Keys set in <code>backend/.env</code> are used by default. This input allows direct testing from the frontend.</span>
+            </div>
+
+            <!-- System Prompt / Persona -->
+            <div class="form-group">
+              <label for="setting-system-prompt" class="form-label">System Instruction (Prompt)</label>
+              <textarea id="setting-system-prompt" class="form-textarea" rows="3" placeholder="You are a helpful, brilliant, and concise AI assistant powered by Google Gemini..."></textarea>
+              <span class="form-help">Defines the AI's core behavior, tone, and response guidelines.</span>
+            </div>
+
+            <!-- Temperature Slider -->
+            <div class="form-group">
+              <div class="slider-label-row">
+                <label for="setting-temperature" class="form-label">Creativity Temperature: <strong id="temp-display">0.7</strong></label>
+                <span class="form-help-inline">0.0 = Precise, 1.0 = Highly Creative</span>
+              </div>
+              <input type="range" id="setting-temperature" class="form-range" min="0" max="1" step="0.05" value="0.7">
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-actions-row">
+              <button type="button" id="btn-reset-settings" class="pill-button secondary">Reset to Defaults</button>
+              <button type="submit" id="btn-save-settings" class="pill-button primary">Save Settings</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <!-- Frontend Logic Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>

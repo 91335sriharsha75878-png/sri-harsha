@@ -1,0 +1,23 @@
+{
+  "name": "gemini-chatbot-fullstack",
+  "version": "1.0.0",
+  "description": "Fullstack Gemini LLM Chatbot with clear differentiation between Frontend and Backend",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "start:backend": "cd backend && node server.js",
+    "start:frontend": "echo Frontend is served automatically by the backend at http://localhost:5000/ or open frontend/index.html",
+    "test": "node test-endpoints.js"
+  },
+  "keywords": [
+    "gemini",
+    "ai",
+    "chatbot",
+    "express",
+    "frontend-backend-separation",
+    "sse-streaming"
+  ],
+  "author": "",
+  "license": "ISC"
+}

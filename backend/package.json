@@ -1,0 +1,26 @@
+{
+  "name": "gemini-chatbot-backend",
+  "version": "1.0.0",
+  "description": "Backend API server for Gemini Chatbot application with clean modular separation",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "gemini",
+    "chatbot",
+    "backend",
+    "express",
+    "ai"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.29.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
